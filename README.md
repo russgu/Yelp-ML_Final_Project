@@ -1,8 +1,4 @@
 
-Project Proposal
-Zi Gu, Erika Lage, Jielei Zhu March 28th, 2016
-Machine Learning
-
 #Finding Clusters in Yelp Reviews to Predict Star Ratings 
 ##Introduction                            
 Yelp’s Dataset Challenge includes several suggestions for topics of research on its website. One of the suggestions under Natural Language Processing is: “How well can you guess a review's rating from its text alone?” As a standalone problem, this is not particularly interesting, since text reviews are always posted with an accompanying star rating. But if we were able to perform this kind of prediction with an acceptable amount of accuracy, we could use it to predict the ratings of new users from the reviews that a restaurant already has—in other words, to build a recommendation
@@ -27,13 +23,15 @@ It will also be helpful to be able to do some manual inspection of the terms tha
 
 ##Timeline
 Deadline: no later than May 1st Total: a month approximately
-* **Data Preprocessing**
- 		---by April 4th, Mon.(approximately a week) o Storing reviews for a particular business/user
-** ***Stemming, removing stop words, etc.***
-• Clustering---by April 18th, Sat.(2 weeks approximately)
-o Trying different ways of clustering; for example, using nouns. • Training and testing---by April 28th, Thurs.(1.5 weeks in estimate)
-o Multiclass SVM/Regression
-o Predict restaurant rating directly( work on baseline) • Report/Evaluation---by May 1st, Sun.(0.5 week roughly)
+* **Data Preprocessing** --- by April 4th, Mon.(approximately a week)
+     - Storing reviews for a particular business/user
+     - Stemming, removing stop words, etc**
+* **Clustering** --- by April 18th, Sat.(2 weeks approximately)
+     - Trying different ways of clustering; for example, using nouns
+* **Training and testing** --- by April 28th, Thurs.(1.5 weeks in estimate)
+     - Multiclass SVM/Regression
+     - Predict restaurant rating directly( work on baseline) 
+* **Report/Evaluation** --- by May 1st, Sun.(0.5 week roughly)
 
 ##Conclusion
 We do not expect this system to perform at the same level as the systems that won the Yelp dataset challenge (for obvious reasons), but by using algorithms we are familiar with, we can spend more time fine tuning our system relative to itself. This should give us insight into what kind of features lend themselves to separating the data into categories that will be useful in recommendation systems.
