@@ -25,7 +25,7 @@ It will also be helpful to be able to do some manual inspection of the terms tha
 Deadline: no later than May 1st Total: a month approximately
 * **Data Preprocessing** --- by April 4th, Mon.(approximately a week)
      - Storing reviews for a particular business/user
-     - Stemming, removing stop words, etc**
+     - Stemming, removing stop words, etc
 * **Clustering** --- by April 18th, Sat.(2 weeks approximately)
      - Trying different ways of clustering; for example, using nouns
 * **Training and testing** --- by April 28th, Thurs.(1.5 weeks in estimate)
