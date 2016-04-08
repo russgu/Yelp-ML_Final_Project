@@ -24,7 +24,7 @@ def features_from_reviews():
     f.close()
   
     word_counts = Counter(words)
-    words = [k for k, v in word_counts.items() if v >= 5]
+    words = [k for k, v in word_counts.items() if v >= 50]
     f = open('dictionary_0.txt', 'w')
     for word in words:
         f.write(word + "\n")
