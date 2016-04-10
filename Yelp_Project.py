@@ -2,7 +2,7 @@ import json
 
 #======== BUSINESS CRITERIA ==========#
 geography = 'city'
-geo_name = 'Las Vegas'
+geo_name = 'Madison'
 business_type = 'Restaurants' 
 #=====================================#
 
@@ -25,11 +25,11 @@ open('(yelp)selected_reviews.json','w') as file:
     for line in json_file:
         review_temp = json.loads(line)
         if review_temp['business_id'] in res_b_id:
-            json.dump({'business_id':review_temp['business_id'],  'user_id': review_temp['user_id'], 'stars':review_temp['stars'], 'text':review_temp['text']}, file)
+            json.dump({'business_id':review_temp['business_id'],  'user_id': review_temp['user_id'], 'stars':review_temp['stars'], 'text':review_temp['text']}, file, ensure_ascii=True)
             file.write('\n')
             review_count += 1
                      
                      
                      
 print('There are ', str(len(res_b_id)), ' restaurants in ', geo_name)
-print('There are ', str(len(review_count)), ' reviews on selected businesses')
+print('There are ', str(review_count), ' reviews on selected businesses')
