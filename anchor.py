@@ -1,3 +1,4 @@
+from __future__ import division
 import json, re
 from sklearn import linear_model
 import numpy as np
@@ -5,11 +6,13 @@ import numpy as np
 def read_reviews(filename):
     f = open(filename, 'r')
     features = []
+    j = 0
     for line in f:
         line = line.split()
         for i in range (0, len(line)):
             line[i] = int(line[i])
         features.append(line)
+        j += 1
 
     return features
 
@@ -39,47 +42,73 @@ def count_errors(labels, anchor, predictions):
             if labels[i] != 0:
                 errors += 1
         i += 1
+    print str((errors/len(predictions)) * 100) + "% error"
+    ##Is this really useful?  Whether the review has the anchor in it isn't actually the ground truth.
+
     return errors
 
 def predict_latent_feature(features, anchor):
-    train = features[:200]
-    validate = features[200:400]
-    predict = features[400:]
+    features = np.array(features)
     
-    labels = [0] * len(features)
+    t = (len(features)/5)
+    v = (t/5)
+    
+    predict_i = np.arange(len(features))
+    train_i = np.random.choice(predict_i, t, False)
+    predict_i = np.setdiff1d(predict_i, train_i, True)
+    validate_i = np.random.choice(train_i, v, False)
+    train_i = np.setdiff1d(train_i, validate_i, True)
+    
+    labels = np.array([0] * len(features))
     for i in range (0, len(features)):
-        labels[i] = features[i][anchor]           
-        features[i] = features[i][:anchor]+features[i][anchor+1:]
+        labels[i] = features[i][anchor]
+
+    feat_i = np.arange(len(features[0]))
+    feat_i = np.setdiff1d(feat_i, [anchor], True)
+    features = features[:,feat_i]
+
+    train_feat = features[train_i]
+    validate_feat = features[validate_i]
+    predict_feat = features[predict_i]
+
+    train_lab = labels[train_i]
+    validate_lab = labels[validate_i]
+    predict_lab = labels[predict_i]
 
     log = linear_model.LogisticRegression()
-    log.fit(train, labels[:200])
-    probs = np.array(log.predict_proba(validate))[:,[1]]
-
+    log.fit(train_feat, train_lab)
+    probs = np.array(log.predict_proba(validate_feat))[:,[1]]
+    
     c = 0
     n = 0
-    for i in range(200, 400):
-        if labels[i] == 1:
-            c += probs[i-200]
+    for i in range(0, len(validate_i)):
+        if validate_lab[i] == 1:
+            c += probs[i]
             n += 1
     c = c/n
-
-    probs = np.array(log.predict_proba(predict))[:,[1]]
-    for i in range(400, 500):
-        if labels[i] == 1:
-            probs[i-400] = 1
+    probs = np.array(log.predict_proba(predict_feat))[:,[1]]
+    for i in range(0, len(predict_i)):
+        if predict_lab[i] == 1:
+            probs[i] = 1
         else:
-            probs[i-400] = probs[i-400]/c
+            probs[i] = probs[i]/c
 
-    print count_errors(labels[400:500], anchor, probs) 
+    ##count_errors(predict_lab, anchor, probs)
+    print len(probs)
     return probs
     
 features = read_reviews('features_0.txt')
 dictionary = read_dictionary('dictionary_0.txt')
 
-anchors = ['over']
+anchors = ['place', 'price']
 anchors = anchor_indices(anchors, dictionary)
+anchor_feats = predict_latent_feature(features, anchors[0])
+for i in range(1, len(anchors)):
+    anchor_feats = np.hstack((anchor_feats, predict_latent_feature(features, anchors[i])))
 
-predictions = predict_latent_feature(features, anchors[0])
+for i in range(0, 20):
+    print anchor_feats[i]
+
 
 
 
