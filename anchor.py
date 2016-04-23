@@ -11,7 +11,10 @@ def read_reviews(filename):
         line = line.split()
         for i in range (0, len(line)):
             line[i] = int(line[i])
+
         features.append(line)
+        ##if j == 100:
+        ##    break
         j += 1
 
     return features
@@ -50,18 +53,22 @@ def count_errors(labels, anchor, predictions):
 def predict_latent_feature(features, anchor):
     features = np.array(features)
     
-    t = (len(features)/5)
-    v = (t/5)
-    
+    ##t = (len(features)*(0.6))
+    ##v = (len(features)*(0.2))
+
     predict_i = np.arange(len(features))
-    train_i = np.random.choice(predict_i, t, False)
+    train_i = np.random.choice(predict_i, len(features)*(0.8), False)
     predict_i = np.setdiff1d(predict_i, train_i, True)
-    validate_i = np.random.choice(train_i, v, False)
+    validate_i = np.random.choice(train_i, len(train_i)*(0.2), False)
     train_i = np.setdiff1d(train_i, validate_i, True)
     
     labels = np.array([0] * len(features))
+    count = 0
     for i in range (0, len(features)):
         labels[i] = features[i][anchor]
+        if labels[i] == 1:
+            count += 1
+    print "Count : " + str(count)
 
     feat_i = np.arange(len(features[0]))
     feat_i = np.setdiff1d(feat_i, [anchor], True)
@@ -94,20 +101,35 @@ def predict_latent_feature(features, anchor):
             probs[i] = probs[i]/c
 
     ##count_errors(predict_lab, anchor, probs)
-    print len(probs)
+    ##print len(probs)
     return probs
-    
-features = read_reviews('features_0.txt')
-dictionary = read_dictionary('dictionary_0.txt')
 
-anchors = ['place', 'price']
-anchors = anchor_indices(anchors, dictionary)
-anchor_feats = predict_latent_feature(features, anchors[0])
-for i in range(1, len(anchors)):
-    anchor_feats = np.hstack((anchor_feats, predict_latent_feature(features, anchors[i])))
+def write_anchor_features(infile):
+    features = read_reviews(infile)
+    dictionary = read_dictionary('dictionary.txt')
 
-for i in range(0, 20):
-    print anchor_feats[i]
+    outfile = infile.replace('_features', '_anchor_features')
+
+    f = open(outfile, 'w')
+
+    anchors = ['disappointing_neg', 'microwav', 'fair', 'portion_neg']
+                #'the', 'and', 'food', 'included_neg', 'bathroom', 'drunken', 'disappointing_neg', 'microwav',
+                #'fair', 'struggl', 'lousi', 'portion_neg']
+                #'bathroom', 
+    anchors = anchor_indices(anchors, dictionary)
+    anchor_feats = predict_latent_feature(features, anchors[0])
+    for i in range(1, len(anchors)):
+        ##print "anchor index: " + str(anchors[i])
+        ##predict_latent_feature(features, anchors[i])
+        ##print "\n"
+        anchor_feats = np.hstack((anchor_feats, predict_latent_feature(features, anchors[i])))
+
+    for i in range(0, len(anchor_feats)):
+        for j in range(1, len(anchor_feats[0])):
+            f.write(anchor_feats[i][j] + " ")
+        f.write("\n")
+
+write_anchor_features('train_features.txt')
 
 
 
