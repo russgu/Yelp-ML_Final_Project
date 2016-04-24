@@ -33,17 +33,18 @@ def build_dictionary(infile, stem=True, negate=True, pos=[], partial=False, num=
         reviews.append([])
         line = json.loads(line)
         text = word_tokenize(line['text'])
-        if len(pos) > 0:
-            text = select_pos(text, pos, stem)
-        elif negate:
-            text = mark_negation(text, double_neg_flip=True)
+        #if len(pos) > 0:
+        #    text = select_pos(text, pos, stem)
+        #elif negate:
+        #    text = mark_negation(text, double_neg_flip=True)
         if stem:
-            w = []
-            for word in text:
-                word = stemmer.stem(word)
-                w.append(word)
-            reviews[i] = list(set(w))
-        words = words + reviews[i]
+            for j in range(0, len(text)):
+                text[j] = stemmer.stem(text[j])
+                #w.append(word)
+            #reviews[i] = list(set(w))
+        if negate:
+            text = mark_negation(text, double_neg_flip=True)
+        words = words + list(set(text))
 
         if i%100 == 0:
             print i
