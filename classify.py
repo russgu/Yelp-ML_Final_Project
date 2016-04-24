@@ -8,12 +8,14 @@ def feature_vectors(filename):
     i = 0
     for line in f:
         line = line.split()
-        
         labels.append(int(line[0]))
         
         feats = []
         for j in range(1, len(line)):
-            feats.append(int(line[j]))
+            if "anchor" in filename:
+                feats.append(float(line[j]))
+            else:
+                feats.append(int(line[j]))
         features.append(feats)
         
         i += 1
@@ -47,17 +49,29 @@ def top_weights(train_feats, train_labels):
         print str(words[coefs.index(m)][0]) + " : " + str(m)
         coefs.remove(m)
         
-train = feature_vectors('train_features.txt')
-train_feats = np.array(train[0])
-train_labels = np.array(train[1])
+##train = feature_vectors('train_features.txt')
+##train_feats = np.array(train[0])
+##train_labels = np.array(train[1])
 
-test = feature_vectors('validate_features.txt')
-test_feats = np.array(test[0])
-test_labels = np.array(test[1])
+##test = feature_vectors('validate_features.txt')
+##test_feats = np.array(test[0])
+##test_labels = np.array(test[1])
 
-top_weights(train_feats, train_labels)
+##top_weights(train_feats, train_labels)
 
-classifier = LinearSVC(penalty="l2")
-classifier.fit(train_feats, train_labels)
-#predictions = classifier.predict(test_feats)
-print "Baseline prediction accuracy " + str(classifier.score(test_feats, test_labels))
+##classifier = LinearSVC()
+##classifier.fit(train_feats, train_labels)
+##predictions = classifier.predict(test_feats)
+##print "Baseline prediction accuracy " + str(classifier.score(test_feats, test_labels))
+
+train_a = feature_vectors('train_anchor_features.txt')
+train_a_labels = np.array(train_a[1])
+train_a_feats = np.array(train_a[0])
+
+validate_a = feature_vectors('validate_anchor_features.txt')
+validate_a_labels = np.array(validate_a[1])
+validate_a_feats = np.array(validate_a[0])
+
+a_classifier = LinearSVC()
+a_classifier.fit(train_a_feats, train_a_labels)
+print "Anchors prediction accuracy " + str(a_classifier.score(validate_a_feats, validate_a_labels))
