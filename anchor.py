@@ -52,15 +52,10 @@ def count_errors(labels, anchor, predictions):
 
 def predict_latent_feature(features, anchor):
     features = np.array(features)
-    
-    ##t = (len(features)*(0.6))
-    ##v = (len(features)*(0.2))
 
-    ##predict_i = np.arange(len(features))
-    ##train_i = np.random.choice(predict_i, len(features)*(0.8), False)
-    ##predict_i = np.setdiff1d(predict_i, train_i, True)
-    ##validate_i = np.random.choice(train_i, len(train_i)*(0.2), False)
-    ##train_i = np.setdiff1d(train_i, validate_i, True)
+    train_i = np.arange(len(features))
+    validate_i = np.random.choice(train_i, len(features)*(0.5), False)
+    train_i = np.setdiff1d(train_i, validate_i, True)
     
     labels = np.array([0] * len(features))
     count = 0
@@ -70,19 +65,15 @@ def predict_latent_feature(features, anchor):
             count += 1
     print "Count : " + str(count)
 
-    ##return
-
     feat_i = np.arange(len(features[0]))
     feat_i = np.setdiff1d(feat_i, [0, anchor], True)
     features = features[:,feat_i]
 
-    train_feat = features[:int(len(features)*(0.5))]
-    validate_feat = features[int(len(features)*(0.5)):int(len(features)*(0.8))]
-    predict_feat = features[int(len(features)*(0.8)):]
+    train_feat = features[train_i]
+    validate_feat = features[validate_i]
 
-    train_lab = labels[:int(len(features)*(0.5))]
-    validate_lab = labels[int(len(features)*(0.5)):int(len(features)*(0.8))]
-    predict_lab = labels[int(len(features)*(0.8)):]
+    train_lab = labels[train_i]
+    validate_lab = labels[validate_i]
 
     log = linear_model.LogisticRegression()
     log.fit(train_feat, train_lab)
@@ -95,20 +86,21 @@ def predict_latent_feature(features, anchor):
             c += probs[i]
             n += 1
     c = c/n
-    probs = log.predict_proba(predict_feat)
-    labels = []
-    for i in range(0, len(predict_feat)):
-        if predict_lab[i] == 1:
-            labels.append(1.0)
+
+    anchor = []
+    probs = log.predict_proba(features)
+    for i in range(0, len(features)):
+        if labels[i] == 1:
+            anchor.append(1.0)
         else:
             if float(probs[i][1]/c) > 1:
-                labels.append(1.0)
+                anchor.append(1.0)
             else:
-                labels.append(float(probs[i][1]/c))
+                anchor.append(float(probs[i][1]/c))
 
     ##count_errors(predict_lab, anchor, probs)
     ##print len(probs)
-    return labels
+    return anchor
 
 def write_anchor_features(infile, anchors):
     features = read_reviews(infile)
@@ -120,7 +112,7 @@ def write_anchor_features(infile, anchors):
 
     anchors = anchor_indices(anchors, dictionary)
     labels = []
-    for i in range(int(len(features)*(0.8)), len(features)):
+    for i in range(0, len(features)):
         labels.append(features[i][0])
 
     anchor_feats = []
@@ -143,8 +135,10 @@ def write_anchor_features(infile, anchors):
 ##anchors = ['wait', 'flavor', 'full', 'decor', 'nice', 'best', 'favorit', 'worst'] ##0.
 #anchors = ['full', 'decor', 'nice', 'best', 'flavor', 'set', 'favorit', 'taco', 'special', 'wait', 'includ', 'hot', 'amount', 'disappoint_NEG', 'disappoint', 'portion', 'well', 'high', 'drink', 'wait_NEG', 'best_NEG'] 
 anchors = ['full', 'decor', 'flavor', 'hot', 'disappoint_NEG', 'high'] ## Accuracy: 0.659292035398
-write_anchor_features('validate_features.txt', anchors)
-write_anchor_features('train_features.txt', anchors)
+#write_anchor_features('validate_features.txt', anchors)
+#write_anchor_features('train_features.txt', anchors)
+
+write_anchor_features('(yelp)selected_features.txt', anchors)
 
 
 

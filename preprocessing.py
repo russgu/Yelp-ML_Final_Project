@@ -1,4 +1,4 @@
-import json, re, nltk, ast
+import json, re, nltk
 from collections import Counter
 from nltk.stem.snowball import SnowballStemmer
 from nltk.tokenize import word_tokenize
@@ -63,11 +63,13 @@ def build_dictionary(infile, stem=True, negate=True, pos=[], partial=False, num=
 
     f = open('dictionary.txt', 'w')
     for word in words:
-        try:
-            f.write(word.encode('utf-8') + "\n")
-        except:
-            print word
-            print q
+        f.write(word.encode('utf-8') + "\n")
+        
+        #try:
+            #f.write(word.encode('utf-8') + "\n")
+        #except:
+            #print word
+            #print q
     f.close()
 
 def write_features(infile):
@@ -89,7 +91,7 @@ def write_features(infile):
     f = open(outfile, 'w')
     i = 0
     for review in reviews:
-        review = ast.literal_eval(json.loads(review))
+        review = json.loads(review)
         
         if review['stars'] >= 4:
             f.write("1")
@@ -117,10 +119,12 @@ def write_features(infile):
 
 #pos = ["NN", "NNS", "NNP", "NNPS"]
 
-build_dictionary('(yelp)selected_reviews.json')
+#build_dictionary('(yelp)selected_reviews.json')
 
-write_features('train_reviews.json')
-write_features('validate_reviews.json')
-write_features('test_reviews.json')
+#write_features('train_reviews.json')
+#write_features('validate_reviews.json')
+#write_features('test_reviews.json')
+
+write_features('(yelp)selected_reviews.json')
 
 
