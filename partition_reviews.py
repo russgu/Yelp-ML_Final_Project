@@ -32,7 +32,10 @@ def generate_set_indices(num_reviews):
     f.close()
 '''
 
-def partition_reviews():
+def partition_reviews(infile):
+    ind = infile.find('_')
+    outfile = infile[ind:]
+    
     f = open('indices.txt', 'r')
     lines = f.readlines()
     train = []
@@ -55,28 +58,37 @@ def partition_reviews():
         i += 1
 
     reviews = []      
-    f = open('(yelp)selected_reviews.json', 'r')
+    f = open(infile, 'r')
     for line in f:
         reviews.append(line)
     reviews = np.array(reviews)
     f.close()
 
-    f = open('train_reviews.json', 'w')
+    f = open('train'+outfile, 'w')
     for r in reviews[train]:
-        json.dump(r, f)
-        f.write("\n")
+        if 'json' in outfile:
+            json.dump(r, f)
+            f.write("\n")
+        else:
+            f.write(r)
     f.close()
 
-    f = open('validate_reviews.json', 'w')
-    for r in reviews[validate]: 
-        json.dump(r, f)
-        f.write("\n")
+    f = open('validate'+outfile, 'w')
+    for r in reviews[validate]:
+        if 'json' in outfile:
+            json.dump(r, f)
+            f.write("\n")
+        else:
+            f.write(r)
     f.close()
 
-    f = open('test_reviews.json', 'w')
+    f = open('test'+outfile, 'w')
     for r in reviews[test]:
-        json.dump(r, f)
-        f.write("\n")
+        if 'json' in outfile:
+            json.dump(r, f)
+            f.write("\n")
+        else:
+            f.write(r)
     f.close()
 
-partition_reviews()
+partition_reviews('(yelp)selected_anchor_features.txt')
