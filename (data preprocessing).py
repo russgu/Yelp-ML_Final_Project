@@ -4,15 +4,15 @@ from nltk.stem.snowball import SnowballStemmer
 from nltk.tokenize import word_tokenize
 from nltk.sentiment.util import mark_negation
 
-def select_pos(text, pos, stem):
-    tags = nltk.pos_tag(text)
-    words = []
-    for tag in tags:
-        if tag[1] in pos:
-            word = tag[0]
-            if re.match("[a-z]+", word):
-                words.append(word)
-    return list(set(words))
+# def select_pos(text, pos, stem):
+#     tags = nltk.pos_tag(text)
+#     words = []
+#     for tag in tags:
+#         if tag[1] in pos:
+#             word = tag[0]
+#             if re.match("[a-z]+", word):
+#                 words.append(word)
+#     return list(set(words))
 
 '''
 if stem is true, stem the words in the reviews
@@ -20,6 +20,10 @@ if negate is true, apply scope of negate to mark negated words
 if pos is non-null, select only the parts of speech in pos
 if partial is true, stop after num lines (for debugging)
 At this point, must pick eitehr pos or negate
+
+This function builds a dictionary of all unique words that occurs at least 50 times in the training set;
+If negate=True, "disappoint" and "disappoint_NEG" are considered as two unique words. 
+The dictionary is saved in "dictionary.txt"
 '''
 def build_dictionary(infile, stem=True, negate=True, pos=[], partial=False, num=500):
     if stem:
@@ -72,6 +76,17 @@ def build_dictionary(infile, stem=True, negate=True, pos=[], partial=False, num=
             #print q
     f.close()
 
+'''
+Reviews are partitioned into 2 groups, 1 and 0(y-label)
+    1 - if star rating>=4
+    0 - if otherwise
+Each review text is converted to a feature vector of the size of words in the dictionary
+For each word in dictionary:
+    1 - if word appears in the review
+    0 - if otherwise
+Format: [label, feature_vector]
+    all elements are separated by " "
+'''
 def write_features(infile):
     outfile = infile.replace("_reviews.json", "_features.txt")
     
