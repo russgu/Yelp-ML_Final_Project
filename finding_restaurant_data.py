@@ -13,9 +13,7 @@ with open('yelp_academic_dataset_business.json','r') as json_file:
         if business_type in b_temp['categories']:
             res_b_id.append(b_temp['business_id'])
             
-            
-    
-            
+         
 review_count = 0 # customer reviews on selected businesses
 
 with open('yelp_academic_dataset_review.json','r') as json_file,\
