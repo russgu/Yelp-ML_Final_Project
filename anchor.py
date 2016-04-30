@@ -110,6 +110,8 @@ def write_anchor_features(infile, anchors):
 
     f = open(outfile, 'w')
 
+    a = anchors
+
     anchors = anchor_indices(anchors, dictionary)
     labels = []
     for i in range(0, len(features)):
@@ -119,13 +121,13 @@ def write_anchor_features(infile, anchors):
     anchor_feats.append(labels)
     for i in range(0, len(anchors)):
         anchor_feats.append(predict_latent_feature(features, anchors[i]))
+        ##print a[i]
         ##predict_latent_feature(features, anchors[i])
+        ##print "\n"
     print len(anchor_feats)
     #print type(anchor_feats)
     print len(anchor_feats[0])
     print len(anchor_feats[1])
-    #print type(anchor_feats[0])
-    #print type(anchor_feats[0][0])
     for j in range(0, len(anchor_feats[0])):
         for i in range(0, len(anchor_feats)):
             f.write(str(anchor_feats[i][j]))
@@ -134,7 +136,8 @@ def write_anchor_features(infile, anchors):
 
 ##anchors = ['wait', 'flavor', 'full', 'decor', 'nice', 'best', 'favorit', 'worst'] ##0.
 #anchors = ['full', 'decor', 'nice', 'best', 'flavor', 'set', 'favorit', 'taco', 'special', 'wait', 'includ', 'hot', 'amount', 'disappoint_NEG', 'disappoint', 'portion', 'well', 'high', 'drink', 'wait_NEG', 'best_NEG'] 
-anchors = ['full', 'decor', 'flavor', 'hot', 'disappoint_NEG', 'high'] ## Accuracy: 0.659292035398
+##anchors = ['full', 'decor', 'flavor', 'hot', 'disappoint_NEG', 'high'] ## Accuracy: 0.659292035398
+anchors = ['full','decor','flavor','worst','salti','upset','high', 'thorough', 'hook', 'wait', 'favorit', 'nice']
 #write_anchor_features('validate_features.txt', anchors)
 #write_anchor_features('train_features.txt', anchors)
 
