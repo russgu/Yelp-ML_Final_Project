@@ -72,7 +72,7 @@ training_file = 'train_reviews.json'
 output_file = 'stemmed_review_text.txt'
 
 anchors = ["rip off / over charged / got charged / overpriced / way overpriced / over priced",
-           "worth every penny / affordable prices", "complimentary",
+           "worth every penny / affordable prices / fair prices", "complimentary",
            "best margaritas / excellent margaritas",
            "delicious drinks / best bartender",
            "worst margarita",
