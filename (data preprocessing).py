@@ -25,7 +25,7 @@ This function builds a dictionary of all unique words that occurs at least 50 ti
 If negate=True, "disappoint" and "disappoint_NEG" are considered as two unique words. 
 The dictionary is saved in "dictionary.txt"
 '''
-def build_dictionary(infile, stem=True, negate=True, pos=[], partial=False, num=500):
+def build_dictionary(infile, stem=False, negate=False, pos=[], partial=False, num=500):
     if stem:
         stemmer = SnowballStemmer("english", ignore_stopwords=True)
     
@@ -87,7 +87,7 @@ For each word in dictionary:
 Format: [label, feature_vector]
     all elements are separated by " "
 '''
-def write_features(infile):
+def write_features(infile, binary=True, cutoff=4):
     outfile = infile.replace("_reviews.json", "_features.txt")
     
     f = open('dictionary.txt', 'r')
@@ -107,14 +107,17 @@ def write_features(infile):
     i = 0
     for review in reviews:
         review = json.loads(review)
-        
-        if review['stars'] >= 4:
-            f.write("1")
-        else:
-            f.write("0")
-        f.write(" ")
 
-        review = review['text']
+        if binary:
+            if review['stars'] >= cutoff:
+                f.write("1")
+            else:
+                f.write("0")
+            f.write(" ")
+        else:
+            f.write(str(review['stars']) + " ")
+
+        review = review['text'].encode('utf-8')
         review = review.split()
         for word in words:
             if word in review:
@@ -140,6 +143,7 @@ def write_features(infile):
 #write_features('validate_reviews.json')
 #write_features('test_reviews.json')
 
+build_dictionary('(yelp)selected_reviews.json')
 write_features('(yelp)selected_reviews.json')
 
 

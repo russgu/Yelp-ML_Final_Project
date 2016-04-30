@@ -1,5 +1,8 @@
 import numpy as np
 from sklearn.svm import LinearSVC
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+
 
 '''
 read feature vectors from 'filename' into memory
@@ -11,7 +14,10 @@ def feature_vectors(filename):
     i = 0
     for line in f:
         line = line.split()
-        labels.append(int(line[0]))
+        try:
+            labels.append(int(line[0]))
+        except:
+            print line[0]
         
         feats = []
         for j in range(1, len(line)):
@@ -56,20 +62,21 @@ def top_weights(train_feats, train_labels):
         # print str(words[coefs.index(m)][0]) + " : " + str(m)
         coefs.remove(m)
         
-##train = feature_vectors('train_features.txt')
-##train_feats = np.array(train[0])
-##train_labels = np.array(train[1])
+train = feature_vectors('train_features.txt')
+train_feats = np.array(train[0])
+train_labels = np.array(train[1])
 
-##test = feature_vectors('validate_features.txt')
-##test_feats = np.array(test[0])
-##test_labels = np.array(test[1])
+test = feature_vectors('validate_features.txt')
+test_feats = np.array(test[0])
+test_labels = np.array(test[1])
 
 ##top_weights(train_feats, train_labels)
 
-##classifier = LinearSVC()
-##classifier.fit(train_feats, train_labels)
-##predictions = classifier.predict(test_feats)
-##print "Baseline prediction accuracy " + str(classifier.score(test_feats, test_labels))
+classifier = SVC()
+classifier.fit(train_feats, train_labels)
+predictions = classifier.predict(test_feats)
+base_score = classifier.score(test_feats, test_labels)
+print "Baseline prediction accuracy using linear SVM " + str(base_score)
 
 train_a = feature_vectors('train_anchor_features.txt')
 train_a_feats = np.array(train_a[0])
@@ -79,6 +86,20 @@ validate_a = feature_vectors('validate_anchor_features.txt')
 validate_a_feats = np.array(validate_a[0])
 validate_a_labels = np.array(validate_a[1])
 
-a_classifier = LinearSVC()
-a_classifier.fit(train_a_feats, train_a_labels)
-print "Anchors prediction accuracy " + str(a_classifier.score(validate_a_feats, validate_a_labels))
+a_svc = SVC(kernel='linear')
+a_svc.fit(train_a_feats, train_a_labels)
+svc_score = a_svc.score(validate_a_feats, validate_a_labels)
+print "Prediction accuracy using anchor features and linear SVM " + str(svc_score)
+
+##nums = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
+##for i in range(0, len(nums)):
+##    print nums[i]
+a_rforest = RandomForestClassifier(n_estimators=120, min_samples_leaf=110, max_depth=40)
+a_rforest.fit(train_a_feats, train_a_labels)
+rforest_score = a_rforest.score(validate_a_feats, validate_a_labels)
+print "Prediction accuracy using anchor features and random forest " + str(rforest_score)
+
+a_gaussian = SVC(kernel='rbf')
+a_gaussian.fit(train_a_feats, train_a_labels)
+gaussian_score = a_gaussian.score(validate_a_feats, validate_a_labels)
+print "Prediction accuracy using anchor features and gaussian kernel " + str(gaussian_score)
