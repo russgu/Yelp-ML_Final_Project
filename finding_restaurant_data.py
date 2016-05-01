@@ -2,6 +2,7 @@ import json
 
 #======== BUSINESS CRITERIA ==========#
 business_type = 'Mexican' 
+location = "Las Vegas"
 #=====================================#
 
 res_b_id = [] # qualified businesses (represented by their business id)
@@ -10,7 +11,7 @@ res_b_id = [] # qualified businesses (represented by their business id)
 with open('yelp_academic_dataset_business.json','r') as json_file:
     for line in json_file:
         b_temp = json.loads(line)
-        if business_type in b_temp['categories']:
+        if business_type in b_temp['categories'] and location in b_temp['city']:
             res_b_id.append(b_temp['business_id'])
             
          
