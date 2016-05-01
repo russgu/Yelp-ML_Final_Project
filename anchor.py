@@ -43,9 +43,10 @@ def anchor_train(features, anchor, dictionary):
     for a in anchors:
         ##Remove individual parts of a bigram from feature vector
         for w in a.split():
-            w = anchor_index(w, dictionary)
-            if w:
-                anchor_i.append(w)
+            if w != a:
+                w = anchor_index(w, dictionary)
+                if w:
+                    anchor_i.append(w)
             
         a = a.replace(" ", "_")
         a = anchor_index(a, dictionary)
@@ -91,9 +92,10 @@ def predict_anchor_proba(features, anchor, log, c):
     for a in anchors:
         ##Remove individual parts of a bigram from feature vector
         for w in a.split():
-            w = anchor_index(w, dictionary)
-            if w:
-                anchor_i.append(w)
+            if w != a:
+                w = anchor_index(w, dictionary)
+                if w:
+                    anchor_i.append(w)
             
         a = a.replace(" ", "_")
         a = anchor_index(a, dictionary)
@@ -101,7 +103,7 @@ def predict_anchor_proba(features, anchor, log, c):
         for i in range (0, len(features)):
             if features[i][a] == 1:
                 labels[i] = 1
-                
+               
     feat_i = np.arange(len(features[0]))
     feat_i = np.setdiff1d(feat_i, anchor_i, True)
     features = features[:,feat_i]
@@ -163,36 +165,28 @@ def write_anchor_features(trainfile, testfile, anchors):
         f.write("\n")
     f.close()
 
-anchors = ["rip off / over charged / overpriced / over priced",
-            "worth every penny / affordable prices / fair prices / fairly priced", "complimentary",
-            "best margaritas",
+anchors = [ "overpriced / over priced",
+            "complimentary",
             "happy hour",
-            "spicy / flavorful / hot", "fresh / tender / juicy",
-            "bland / tasteless",
+            "spicy / flavorful / hot",
+            "fresh / tender / juicy",
+            "bland",
             "stale / soggy / canned",
-            "luke warm / cold food",
             "best tacos / best taco",
-            "best guacamole / fresh guac / homemade guacamole",
             "gourmet",
             "fresh / homemade",
-            "small portions",
             "decor / ambience",
             "laid back / casual",
             "date",
             "bright",
             "hidden gem / little gem",
-            "terrible service / horrible service / worst service / rude / poor service",
-            "sent back / wrong food / never received",
-            "extremely attentive / outstanding service / extremely helpful",
+            "rude",
             "took forever / finally came",
             "line",
             "authentic / traditional",
-            "patio seating",
-            "breakfast / brunch",
-            "food poisoning / got sick",
-            "only saving grace / only redeeming / only positive"]
+            "breakfast / brunch"]
 
-dictionary = read_dictionary('dictionary.txt')
+#dictionary = read_dictionary('dictionary.txt')
 write_anchor_features('train_features.txt', 'validate_features.txt', anchors)
 
 
