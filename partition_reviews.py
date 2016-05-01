@@ -91,7 +91,4 @@ def partition_reviews(infile):
             f.write(r)
     f.close()
 
-num = count_reviews('(yelp)selected_reviews.json')
-generate_set_indices(num)
-
-partition_reviews('(yelp)selected_reviews.json')
+partition_reviews('(yelp)bigrams_features.txt')

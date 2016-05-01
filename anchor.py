@@ -13,8 +13,8 @@ def read_reviews(filename):
             line[i] = int(line[i])
 
         features.append(line)
-        ##if j == 100:
-        ##    break
+##        if j == 10000:
+##            break
         j += 1
 
     return features
@@ -28,46 +28,39 @@ def read_dictionary(filename):
         
     return dictionary
 
-def anchor_indices(anchors, dictionary):
-    indices = []
-    for anchor in anchors:
-        indices.append(dictionary.index(anchor))
-    return indices
+def anchor_index(anchor, dictionary):
+    try:
+        return dictionary.index(anchor)
+    except:
+        return False
 
-def count_errors(labels, anchor, predictions):
-    i = 0
-    errors = 0
-    for i in range(0, len(predictions)):
-        if predictions[i] > 0.5:
-            if labels[i] != 1:
-                errors += 1
-        else:
-            if labels[i] != 0:
-                errors += 1
-        i += 1
-    print str((errors/len(predictions)) * 100) + "% error"
-    ##Is this really useful?  Whether the review has the anchor in it isn't actually the ground truth.
-
-    return errors
-
-def predict_latent_feature(features, anchor):
+def anchor_train(features, anchor, dictionary):    
     features = np.array(features)
+
+    labels = np.array([0] * len(features))
+    anchors = anchor.split(" / ")
+    anchor_i = [0]
+    for a in anchors:
+        ##Remove individual parts of a bigram from feature vector
+        for w in a.split():
+            w = anchor_index(w, dictionary)
+            if w:
+                anchor_i.append(w)
+            
+        a = a.replace(" ", "_")
+        a = anchor_index(a, dictionary)
+        anchor_i.append(a)
+        for i in range (0, len(features)):
+            if features[i][a] == 1:
+                labels[i] = 1
+            
+    feat_i = np.arange(len(features[0]))
+    feat_i = np.setdiff1d(feat_i, anchor_i, True)
+    features = features[:,feat_i]
 
     train_i = np.arange(len(features))
     validate_i = np.random.choice(train_i, len(features)*(0.5), False)
     train_i = np.setdiff1d(train_i, validate_i, True)
-    
-    labels = np.array([0] * len(features))
-    count = 0
-    for i in range (0, len(features)):
-        labels[i] = features[i][anchor]
-        if labels[i] == 1:
-            count += 1
-    print "Count : " + str(count)
-
-    feat_i = np.arange(len(features[0]))
-    feat_i = np.setdiff1d(feat_i, [0, anchor], True)
-    features = features[:,feat_i]
 
     train_feat = features[train_i]
     validate_feat = features[validate_i]
@@ -87,61 +80,120 @@ def predict_latent_feature(features, anchor):
             n += 1
     c = c/n
 
-    anchor = []
+    return [log, c]
+
+def predict_anchor_proba(features, anchor, log, c):
+    features = np.array(features)
+
+    labels = np.array([0] * len(features))
+    anchors = anchor.split(" / ")
+    anchor_i = [0]
+    for a in anchors:
+        ##Remove individual parts of a bigram from feature vector
+        for w in a.split():
+            w = anchor_index(w, dictionary)
+            if w:
+                anchor_i.append(w)
+            
+        a = a.replace(" ", "_")
+        a = anchor_index(a, dictionary)
+        anchor_i.append(a)
+        for i in range (0, len(features)):
+            if features[i][a] == 1:
+                labels[i] = 1
+                
+    feat_i = np.arange(len(features[0]))
+    feat_i = np.setdiff1d(feat_i, anchor_i, True)
+    features = features[:,feat_i]
+
+    predictions = []
     probs = log.predict_proba(features)
     for i in range(0, len(features)):
         if labels[i] == 1:
-            anchor.append(1.0)
+            predictions.append(1.0)
         else:
             if float(probs[i][1]/c) > 1:
-                anchor.append(1.0)
+                predictions.append(1.0)
             else:
-                anchor.append(float(probs[i][1]/c))
+                predictions.append(float(probs[i][1]/c))
 
-    ##count_errors(predict_lab, anchor, probs)
-    ##print len(probs)
-    return anchor
+    return predictions
 
-def write_anchor_features(infile, anchors):
-    features = read_reviews(infile)
+def write_anchor_features(trainfile, testfile, anchors):
+    train_features = read_reviews(trainfile)
+    test_features = read_reviews(testfile)
     dictionary = read_dictionary('dictionary.txt')
 
-    outfile = infile.replace('_features', '_anchor_features')
+    trainoutfile = trainfile.replace('_features', '_anchor_features')
+    testoutfile = testfile.replace('_features', '_anchor_features')
+    
+    train_labels = []
+    for i in range(0, len(train_features)):
+        train_labels.append(train_features[i][0])
 
-    f = open(outfile, 'w')
+    test_labels = []
+    for i in range(0, len(test_features)):
+        test_labels.append(test_features[i][0])
 
-    a = anchors
+    train_anchor_feats = []
+    test_anchor_feats = []
+    train_anchor_feats.append(train_labels)
+    test_anchor_feats.append(test_labels)
+    for anchor in anchors:
+        print anchor
+        a = anchor_train(train_features, anchor, dictionary)
+        log = a[0]
+        c = a[1]
+        train_anchor_feats.append(predict_anchor_proba(train_features, anchor, log, c))
+        test_anchor_feats.append(predict_anchor_proba(test_features, anchor, log, c))
 
-    anchors = anchor_indices(anchors, dictionary)
-    labels = []
-    for i in range(0, len(features)):
-        labels.append(features[i][0])
-
-    anchor_feats = []
-    anchor_feats.append(labels)
-    for i in range(0, len(anchors)):
-        anchor_feats.append(predict_latent_feature(features, anchors[i]))
-        ##print a[i]
-        ##predict_latent_feature(features, anchors[i])
-        ##print "\n"
-    print len(anchor_feats)
-    #print type(anchor_feats)
-    print len(anchor_feats[0])
-    print len(anchor_feats[1])
-    for j in range(0, len(anchor_feats[0])):
-        for i in range(0, len(anchor_feats)):
-            f.write(str(anchor_feats[i][j]))
+    f = open(trainoutfile, 'w')
+    for j in range(0, len(train_anchor_feats[0])):
+        for i in range(0, len(train_anchor_feats)):
+            f.write(str(train_anchor_feats[i][j]))
             f.write(" ")
         f.write("\n")
+    f.close()
 
-##anchors = ['wait', 'flavor', 'full', 'decor', 'nice', 'best', 'favorit', 'worst'] ##0.
-#anchors = ['full', 'decor', 'nice', 'best', 'flavor', 'set', 'favorit', 'taco', 'special', 'wait', 'includ', 'hot', 'amount', 'disappoint_NEG', 'disappoint', 'portion', 'well', 'high', 'drink', 'wait_NEG', 'best_NEG'] 
-##anchors = ['full', 'decor', 'flavor', 'hot', 'disappoint_NEG', 'high'] ## Accuracy: 0.659292035398
-anchors = ['full','decor','flavor','worst','salti','upset','high', 'thorough', 'hook', 'wait', 'favorit', 'nice']
-#write_anchor_features('validate_features.txt', anchors)
-#write_anchor_features('train_features.txt', anchors)
+    f = open(testoutfile, 'w')
+    for j in range(0, len(test_anchor_feats[0])):
+        for i in range(0, len(test_anchor_feats)):
+            f.write(str(test_anchor_feats[i][j]))
+            f.write(" ")
+        f.write("\n")
+    f.close()
 
-write_anchor_features('(yelp)selected_features.txt', anchors)
+anchors = ["rip off / over charged / overpriced / over priced",
+            "worth every penny / affordable prices / fair prices / fairly priced", "complimentary",
+            "best margaritas",
+            "happy hour",
+            "spicy / flavorful / hot", "fresh / tender / juicy",
+            "bland / tasteless",
+            "stale / soggy / canned",
+            "luke warm / cold food",
+            "best tacos / best taco",
+            "best guacamole / fresh guac / homemade guacamole",
+            "gourmet",
+            "fresh / homemade",
+            "small portions",
+            "decor / ambience",
+            "laid back / casual",
+            "date",
+            "bright",
+            "hidden gem / little gem",
+            "terrible service / horrible service / worst service / rude / poor service",
+            "sent back / wrong food / never received",
+            "extremely attentive / outstanding service / extremely helpful",
+            "took forever / finally came",
+            "line",
+            "authentic / traditional",
+            "patio seating",
+            "breakfast / brunch",
+            "food poisoning / got sick",
+            "only saving grace / only redeeming / only positive"]
+
+dictionary = read_dictionary('dictionary.txt')
+write_anchor_features('train_features.txt', 'validate_features.txt', anchors)
 
 
 
