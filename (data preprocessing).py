@@ -93,7 +93,7 @@ def write_features(infile, binary=True, cutoff=4):
     f.close()
     print "Done features"
 
-##build_dictionary('(yelp)selected_reviews_new.json')
+build_dictionary('(yelp)bigrams_selected_reviews.json')
 write_features('(yelp)bigrams_selected_reviews.json')
 
 
