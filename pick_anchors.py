@@ -39,6 +39,7 @@ def stem(infile, outfile,  anchors, stem=True, negate=True):
             
 
 def find_anchors(infile, anchors):
+    outf = open("counts.txt", 'w')
     for anchor in anchors:
         totalcount = 0
         totalstars = {1:0, 2:0, 3:0, 4:0, 5:0}       
@@ -48,10 +49,18 @@ def find_anchors(infile, anchors):
             count = 0
             with open(infile, 'r') as f:
                 word = word.replace(" ", "_")
+                pos = 0
+                neg = 0
                 for line in f: 
                     line = json.loads(line)
                     star = line['stars']
                     text = line['text']
+                    if stars[(line['stars'])] == 1:
+                        pos += 1
+                    elif stars[(line['stars'])] == 0:
+                        neg += 1
+                    
+                    
                     
                     if " "+word+" " in text:
                         count += 1
@@ -59,47 +68,48 @@ def find_anchors(infile, anchors):
                         totalcount += 1
                         totalstars[(line['stars'])] += 1
 
+                print pos
+                print neg
+                assert False
                 print word
                 print "count " + str(count)
                 print "stars " + str(stars)
+                outf.write(word + " count: " + str(count) + " stars: " + str(stars) + "\n")
+                
            
         print words
         print "count " + str(totalcount)
         print "stars " + str(totalstars)
         print "\n"
-
+        outf.write(str(words) + " count: " + str(totalcount) + " stars: " + str(totalstars) + "\n")
+    outf.close()
 training_file = 'train_reviews.json'
 output_file = 'stemmed_review_text.txt'
 
-anchors = ["rip off / over charged / got charged / overpriced / way overpriced / over priced",
-           "worth every penny / affordable prices / fair prices", "complimentary",
-           "best margaritas / excellent margaritas",
-           "delicious drinks / best bartender",
-           "worst margarita",
+anchors = ["rip off / over charged / overpriced / over priced",
+           "worth every penny / affordable prices / fair prices / fairly priced", "complimentary",
+           "best margaritas",
            "happy hour",
            "spicy / flavorful / hot", "fresh / tender / juicy",
-            "bland / zero flavor / under seasoned / lacked flavor / tasteless / underseasoned",
+            "bland / tasteless",
             "stale / soggy / canned",
            "luke warm / cold food",
-           "best tacos / awesome tacos / best taco",
+           "best tacos / best taco",
            "best guacamole / fresh guac / homemade guacamole",
            "gourmet",
            "fresh / homemade",
-           "absolutely disgusting",
-           "tiny portions / small portions",
-           "decor / ambience / great environment / awesome atmosphere",
+           "small portions",
+           "decor / ambience",
             "laid back / casual",
-            "tourist trap",
-            "date spot / date",
-            "bright / colors",
+            "date",
+            "bright",
             "hidden gem / little gem",
-            "terrible service / horrible service / worst service / service sucked / rude service / poor service",
+            "terrible service / horrible service / worst service / rude / poor service",
             "sent back / wrong food / never received",
             "extremely attentive / outstanding service / extremely helpful",
-            "waited forever / took forever / finally arrived / finally came / line",
-            "extremely rude",
-            "best authentic / authentic street / authentic / old fashioned / traditional",
-            "americanized",
+            "took forever / finally came",
+            "line",
+            "authentic / traditional",
             "patio seating",
             "breakfast / brunch",
             "food poisoning / got sick",
