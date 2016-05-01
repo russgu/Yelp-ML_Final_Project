@@ -20,7 +20,7 @@ def generate_set_indices(num_reviews):
     validate = np.random.choice(train, len(train)*(2/10), False)
     train = np.setdiff1d(train, validate, True)
 
-    f = open('new_indices.txt', 'w')
+    f = open('indices.txt', 'w')
     sets = [train, validate, test]
     set_names = ['train', 'validate', 'test']
     for i in range(0, len(sets)):
@@ -91,4 +91,6 @@ def partition_reviews(infile):
             f.write(r)
     f.close()
 
+##num = count_reviews('(yelp)selected_reviews.json')
+##generate_set_indices(num)
 partition_reviews('(yelp)bigrams_features.txt')

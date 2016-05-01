@@ -68,9 +68,6 @@ def find_anchors(infile, anchors):
                         totalcount += 1
                         totalstars[(line['stars'])] += 1
 
-                print pos
-                print neg
-                assert False
                 print word
                 print "count " + str(count)
                 print "stars " + str(stars)
@@ -86,34 +83,24 @@ def find_anchors(infile, anchors):
 training_file = 'train_reviews.json'
 output_file = 'stemmed_review_text.txt'
 
-anchors = ["rip off / over charged / overpriced / over priced",
-           "worth every penny / affordable prices / fair prices / fairly priced", "complimentary",
-           "best margaritas",
+anchors = ["overpriced / over priced",
+           "complimentary",
            "happy hour",
            "spicy / flavorful / hot", "fresh / tender / juicy",
-            "bland / tasteless",
+            "bland",
             "stale / soggy / canned",
-           "luke warm / cold food",
            "best tacos / best taco",
-           "best guacamole / fresh guac / homemade guacamole",
            "gourmet",
            "fresh / homemade",
-           "small portions",
            "decor / ambience",
             "laid back / casual",
             "date",
             "bright",
             "hidden gem / little gem",
-            "terrible service / horrible service / worst service / rude / poor service",
-            "sent back / wrong food / never received",
-            "extremely attentive / outstanding service / extremely helpful",
-            "took forever / finally came",
+            "rude",            "took forever / finally came",
             "line",
             "authentic / traditional",
-            "patio seating",
-            "breakfast / brunch",
-            "food poisoning / got sick",
-            "only saving grace / only redeeming / only positive"]
+            "breakfast / brunch"]
 
 stem(training_file, output_file, anchors)
 
