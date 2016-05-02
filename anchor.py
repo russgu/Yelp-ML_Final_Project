@@ -39,7 +39,7 @@ def anchor_train(features, anchor, dictionary):
 
     labels = np.array([0] * len(features))
     anchors = anchor.split(" / ")
-    anchor_i = [0]
+    anchor_i = []
     for a in anchors:
         ##Remove individual parts of a bigram from feature vector
         for w in a.split():
@@ -83,12 +83,12 @@ def anchor_train(features, anchor, dictionary):
 
     return [log, c]
 
-def predict_anchor_proba(features, anchor, log, c):
+def predict_anchor_proba(features, anchor, log, c, dictionary):
     features = np.array(features)
 
     labels = np.array([0] * len(features))
     anchors = anchor.split(" / ")
-    anchor_i = [0]
+    anchor_i = []
     for a in anchors:
         ##Remove individual parts of a bigram from feature vector
         for w in a.split():
@@ -132,10 +132,12 @@ def write_anchor_features(trainfile, testfile, anchors):
     train_labels = []
     for i in range(0, len(train_features)):
         train_labels.append(train_features[i][0])
+        train_features[i] = train_features[i][1:]
 
     test_labels = []
     for i in range(0, len(test_features)):
         test_labels.append(test_features[i][0])
+        test_features[i] = test_features[i][1:]
 
     train_anchor_feats = []
     test_anchor_feats = []
@@ -146,8 +148,8 @@ def write_anchor_features(trainfile, testfile, anchors):
         a = anchor_train(train_features, anchor, dictionary)
         log = a[0]
         c = a[1]
-        train_anchor_feats.append(predict_anchor_proba(train_features, anchor, log, c))
-        test_anchor_feats.append(predict_anchor_proba(test_features, anchor, log, c))
+        train_anchor_feats.append(predict_anchor_proba(train_features, anchor, log, c, dictionary))
+        test_anchor_feats.append(predict_anchor_proba(test_features, anchor, log, c, dictionary))
 
     f = open(trainoutfile, 'w')
     for j in range(0, len(train_anchor_feats[0])):
