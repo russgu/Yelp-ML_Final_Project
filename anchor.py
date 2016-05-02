@@ -193,4 +193,3 @@ write_anchor_features('train_features.txt', 'validate_features.txt', anchors)
 
 
 
-
