@@ -3,6 +3,46 @@ import json, re
 from sklearn import linear_model
 import numpy as np
 
+def write_model(log, anchor, dictionary):
+    coefs = list(log.coef_[0])
+
+    f = open("Anchor_Models/"+anchor.split()[0]+'_model.txt', 'w')
+    f.write("Weights for anchor " + anchor + "\n\n")
+    
+    anchors = anchor.split(" / ")
+    for a in anchors:
+        ##Remove individual parts of a bigram from feature vector
+        for w in a.split():
+            if w != a:
+                w = anchor_index(w, dictionary)
+                if w:
+                    dictionary = dictionary[:w] + dictionary[w+1:]
+            
+        a = a.replace(" ", "_")
+        a = anchor_index(a, dictionary)
+        dictionary = dictionary[:a] + dictionary[a+1:]
+
+    print len(dictionary)
+    print len(coefs)
+
+    assert False
+
+    m = 1
+    while (m != 0):
+        maxc = max(coefs)
+        minc = min(coefs)
+
+        if abs(minc) > maxc:
+            m = minc
+        else:
+            m = maxc
+            
+        f.write(str(dictionary[coefs.index(m)]) + " : " + str(m) + "\n")
+        coefs.remove(m)
+
+    f.close()
+    
+
 def read_reviews(filename):
     f = open(filename, 'r')
     features = []
@@ -13,8 +53,8 @@ def read_reviews(filename):
             line[i] = int(line[i])
 
         features.append(line)
-##        if j == 10000:
-##            break
+        if j == 10000:
+            break
         j += 1
 
     return features
@@ -40,6 +80,7 @@ def anchor_train(features, anchor, dictionary):
     labels = np.array([0] * len(features))
     anchors = anchor.split(" / ")
     anchor_i = []
+    print len(features[0])
     for a in anchors:
         ##Remove individual parts of a bigram from feature vector
         for w in a.split():
@@ -58,6 +99,8 @@ def anchor_train(features, anchor, dictionary):
     feat_i = np.arange(len(features[0]))
     feat_i = np.setdiff1d(feat_i, anchor_i, True)
     features = features[:,feat_i]
+
+    print len(features[0])
 
     train_i = np.arange(len(features))
     validate_i = np.random.choice(train_i, len(features)*(0.5), False)
@@ -80,6 +123,8 @@ def anchor_train(features, anchor, dictionary):
             c += probs[i]
             n += 1
     c = c/n
+
+    write_model(log, anchor, dictionary)
 
     return [log, c]
 
@@ -125,6 +170,9 @@ def write_anchor_features(trainfile, testfile, anchors):
     train_features = read_reviews(trainfile)
     test_features = read_reviews(testfile)
     dictionary = read_dictionary('dictionary.txt')
+
+    print len(train_features)
+    print len(test_features)
 
     trainoutfile = trainfile.replace('_features', '_anchor_features')
     testoutfile = testfile.replace('_features', '_anchor_features')
@@ -188,8 +236,6 @@ anchors = [ "overpriced / over priced",
             "authentic / traditional",
             "breakfast / brunch"]
 
-#dictionary = read_dictionary('dictionary.txt')
-write_anchor_features('train_features.txt', 'validate_features.txt', anchors)
-
+write_anchor_features('train_features.txt', 'test_features.txt', anchors)
 
 

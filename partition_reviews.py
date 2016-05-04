@@ -49,7 +49,7 @@ def partition_reviews(infile):
     i += 1
     while 'test' not in lines[i]:
         lines[i] = lines[i].strip()
-        validate.append(int(lines[i]))
+        validate.append(int(lines[i])
         i += 1
     i += 1
     while i < len(lines):
