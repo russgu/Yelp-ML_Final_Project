@@ -13,8 +13,6 @@ def read_reviews(filename):
             line[i] = int(line[i])
 
         features.append(line)
-##        if j == 10000:
-##            break
         j += 1
 
     return features

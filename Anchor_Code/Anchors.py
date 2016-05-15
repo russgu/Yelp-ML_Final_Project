@@ -1,6 +1,7 @@
 import json, re
 from collections import Counter
 import numpy as np
+from sklearn import linear_model
 from nltk.tokenize import word_tokenize
 
 class Preprocessing:
@@ -11,7 +12,7 @@ class Preprocessing:
     of anchors and the text.  Default window size is 0
     '''
     def process_anchors(self, infile, anchorfile, window_size=0):
-        outfile = infile.replace("(yelp)selected", "(yelp)selectedwindow"+str(window_size))
+        outfile = infile.replace("(yelp)selected_", "(yelp)bigram_")
         
         anchors = Read_Data().read_anchors(anchorfile)
         anchor_list = []
@@ -22,26 +23,27 @@ class Preprocessing:
 
         f = open(infile,"r")
         newf = open(outfile,"w")
-        
+
         for line in f:
             data = json.loads(line)
             review = data["text"]
             review = review.lower()
             review = review.replace("'", "")
             review = re.sub("[^a-z]+", " ", review)
-            review = word_tokenize(review)
 
             for word in anchors:
                 ##searching bigrams in review text
-                if word in review:
-                    ind = review.index(word)
+                if " "+word+" " in review:
                     if " " in word:
+                        oldword = word
                         word = word.replace(" ", "_")
+                        review = review.replace(" "+oldword+" ", " "+word+" ") 
+                        review = word_tokenize(review)
+                        ind = review.index(word)
                         review[ind] = word
+                        review = " ".join(review[:ind-window_size]+[word]+review[(ind+1)+window_size:])
 
-                    review = review[:ind-window_size]+[word]+review[(ind+1)+window_size:]
-
-            data["text"] = " ".join(review)
+            data["text"] = review
             json.dump({'business_id':data['business_id'],  'user_id': data['user_id'], 'stars':data['stars'], 'text':data['text']}, newf, ensure_ascii=True)
             newf.write('\n')
             
@@ -56,7 +58,7 @@ class Preprocessing:
         words = []
         i = 0
         for line in f:
-            line = json.loads(line)['text']
+            line = json.loads(json.loads(line))['text']
             text = word_tokenize(line)
             words = words + list(set(text))
 
@@ -106,7 +108,7 @@ class Preprocessing:
         f = open(outfile, 'w')
         i = 0
         for review in reviews:
-            review = json.loads(review)
+            review = json.loads(json.loads(review))
 
             if binary:
                 if review['stars'] >= cutoff:
@@ -148,6 +150,7 @@ class Read_Data:
             else:
                 anchors.append(anchor)
                 anchor = []
+        anchors.append(anchor)
         return anchors
 
     '''
@@ -212,27 +215,27 @@ class Anchors:
     def write_model(self, log, anchor, dictionary):
         coefs = list(log.coef_[0])
 
-        f = open("Anchor_Models/"+anchor.split()[0]+'_model.txt', 'w')
-        f.write("Weights for anchor " + anchor + "\n\n")
+        f = open("Anchor_Models/"+anchor[0]+'_model.txt', 'w')
+        f.write("Weights for anchor "+anchor[0]+"\n\n")
         
-        anchors = anchor.split(" / ")
+        anchors = anchor
         for a in anchors:
             ##Remove individual parts of a bigram from feature vector
             for w in a.split():
                 if w != a:
-                    w = anchor_index(w, dictionary)
+                    w = self.anchor_index(w, dictionary)
                     if w:
                         dictionary = dictionary[:w] + dictionary[w+1:]
                 
             a = a.replace(" ", "_")
-            a = anchor_index(a, dictionary)
+            a = self.anchor_index(a, dictionary)
             dictionary = dictionary[:a] + dictionary[a+1:]
 
-        print len(dictionary)
-        print len(coefs)
+        ##print len(dictionary)
+        ##print len(coefs)
 
         m = 1
-        while (m != 0):
+        while (m != 0 and len(coefs) > 0):
             maxc = max(coefs)
             minc = min(coefs)
 
@@ -252,23 +255,24 @@ class Anchors:
         except:
             return False
 
-    def anchor_train(self, features, anchor, dictionary):    
+    def anchor_train(self, features, anchors, dictionary):    
         features = np.array(features)
 
         labels = np.array([0] * len(features))
-        anchors = anchor.split(" / ")
         anchor_i = []
         print len(features[0])
         for a in anchors:
             ##Remove individual parts of a bigram from feature vector
             for w in a.split():
                 if w != a:
-                    w = anchor_index(w, dictionary)
+                    w = self.anchor_index(w, dictionary)
                     if w:
                         anchor_i.append(w)
                 
             a = a.replace(" ", "_")
-            a = anchor_index(a, dictionary)
+            temp = a
+            a = self.anchor_index(a, dictionary)
+                
             anchor_i.append(a)
             for i in range (0, len(features)):
                 if features[i][a] == 1:
@@ -281,7 +285,7 @@ class Anchors:
         print len(features[0])
 
         train_i = np.arange(len(features))
-        validate_i = np.random.choice(train_i, len(features)*(0.5), False)
+        validate_i = np.random.choice(train_i, int(len(features)*(0.5)), False)
         train_i = np.setdiff1d(train_i, validate_i, True)
 
         train_feat = features[train_i]
@@ -302,26 +306,25 @@ class Anchors:
                 n += 1
         c = c/n
 
-        write_model(log, anchor, dictionary)
+        self.write_model(log, anchors, dictionary)
 
         return [log, c]
 
-    def predict_anchor_proba(self, features, anchor, log, c, dictionary):
+    def predict_anchor_proba(self, features, anchors, log, c, dictionary):
         features = np.array(features)
 
         labels = np.array([0] * len(features))
-        anchors = anchor.split(" / ")
         anchor_i = []
         for a in anchors:
             ##Remove individual parts of a bigram from feature vector
             for w in a.split():
                 if w != a:
-                    w = anchor_index(w, dictionary)
+                    w = self.anchor_index(w, dictionary)
                     if w:
                         anchor_i.append(w)
                 
             a = a.replace(" ", "_")
-            a = anchor_index(a, dictionary)
+            a = self.anchor_index(a, dictionary)
             anchor_i.append(a)
             for i in range (0, len(features)):
                 if features[i][a] == 1:
@@ -366,12 +369,13 @@ class Anchors:
         test_anchor_feats = [test_labels]
         for anchor in anchors:
             print anchor
-            a = anchor_train(train_features, anchor, dictionary)
+            a = self.anchor_train(train_features, anchor, dictionary)
             log = a[0]
             c = a[1]
-            train_anchor_feats.append(predict_anchor_proba(train_features, anchor, log, c, dictionary))
-            test_anchor_feats.append(predict_anchor_proba(test_features, anchor, log, c, dictionary))
+            train_anchor_feats.append(self.predict_anchor_proba(train_features, anchor, log, c, dictionary))
+            test_anchor_feats.append(self.predict_anchor_proba(test_features, anchor, log, c, dictionary))
 
+        print len(train_anchor_feats[0])
         f = open(trainoutfile, 'w')
         for j in range(0, len(train_anchor_feats[0])):
             for i in range(0, len(train_anchor_feats)):
