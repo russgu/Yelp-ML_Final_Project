@@ -42,7 +42,4 @@ https://www.yelp.com/dataset_challenge https://www.yelp.com/html/pdf/YelpDataset
 https://www.yelp.com/html/pdf/YelpDatasetChallengeWinner_PersonalizingRatings.pdf
 
 ##To Run
-1) Yelp_Project.py to pull out selected reviews
-2) partition_review.py to partition the reviews into test, train, validate files
-3) preprocessing.py to generate the dictionary and the files of feature vectors for best, train, validate
-4) classify.py to run an svm classifier for baseline accuracy and to pull out top weights of L1 penalty classifier to use in selecting anchors
+Run anchor_classify.py in Anchor_Code to run the entire pipeline.  Looking through that file should give you an idea of how to use the individual functions in Anchor.py as well if you want to modify things.  
